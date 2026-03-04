@@ -1,0 +1,12 @@
+{
+  "name": "running-app-sync",
+  "version": "1.0.0",
+  "description": "Automatic sync from Google Sheets to Running App",
+  "main": "fetch-workouts.js",
+  "scripts": {
+    "sync": "node fetch-workouts.js",
+    "test": "node fetch-workouts.js"
+  },
+  "author": "",
+  "license": "MIT"
+}
