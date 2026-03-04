@@ -1,0 +1,54 @@
+name: Sync Workouts from Google Sheets
+
+on:
+  # Run every hour
+  schedule:
+    - cron: '0 * * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+  
+  # Run on push to main
+  push:
+    branches: [ main ]
+
+jobs:
+  sync-workouts:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: 🏃 Fetch workout data from Google Sheets
+        run: node fetch-workouts.js
+      
+      - name: 📊 Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes detected"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 💾 Commit and push changes
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "🔄 Auto-update workouts from Google Sheets [$(date +'%Y-%m-%d %H:%M:%S')]"
+          git push
+      
+      - name: ✅ Sync complete
+        run: echo "Workout data sync completed successfully!"
